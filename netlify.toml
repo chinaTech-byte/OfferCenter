@@ -1,0 +1,39 @@
+# netlify.toml - Netlify configuration for Portaflux
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Redirect all API calls to serverless functions
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# Redirect /admin to admin.html
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+# Redirect root to index.html
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+# Environment variables (replace placeholders with your real secrets)
+[build.environment]
+  NODE_ENV = "production"
+  EMAIL_SERVICE = "gmail"
+  EMAIL_USER = "your-email@gmail.com"
+  EMAIL_PASS = "your-email-password"
+  GUMROAD_WEBHOOK_SECRET = "your-gumroad-webhook-secret"
+
+# Optional: Headers for security and caching
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    Cache-Control = "public, max-age=0, must-revalidate"

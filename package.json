@@ -1,0 +1,9 @@
+{
+  "name": "portaflux-backend",
+  "version": "1.0.0",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "firebase-admin": "^11.0.0",
+    "node-fetch": "^2.6.7"
+  }
+}

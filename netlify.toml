@@ -28,7 +28,6 @@
   EMAIL_USER = "your-email@gmail.com"
   EMAIL_PASS = "your-email-password"
   GUMROAD_WEBHOOK_SECRET = "your-gumroad-webhook-secret"
-
 # Optional: Headers for security and caching
 [[headers]]
   for = "/*"

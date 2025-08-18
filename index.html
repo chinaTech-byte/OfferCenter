@@ -2981,123 +2981,7 @@ updateCoinBalances() {
             
             
             
-            setupFeedPage() {
-            // Initial load
-            this.loadChatMessages();
-            this.updateOnlineStatus();
             
-            // Refresh chat every 5 seconds
-            this.chatRefreshInterval = setInterval(() => {
-            this.loadChatMessages().catch(error => 
-            console.error('Chat refresh error:', error)
-            );
-            }, 5000);
-            
-              // Initialize online status
-              this.updateOnlineStatus();
-              this.onlineUsersInterval = setInterval(() => {
-              this.updateOnlineStatus();
-              }, 30000); // Every 30 seconds
-              }
-            
-            cleanupFeedPage() {
-            clearInterval(this.chatRefreshInterval);
-            clearInterval(this.onlineUsersInterval);
-            this.chatRefreshInterval = null;
-            this.onlineUsersInterval = null;
-            }
-            
-            async exportChatData(format) {
-            try {
-            const response = await fetch('/.netlify/functions/getAllChatMessages');
-            if (!response.ok) throw new Error('Failed to fetch chat messages');
-            
-            const messages = await response.json();
-            
-            if (format === 'csv') {
-            this.exportToCsv(messages);
-            } else if (format === 'pdf') {
-            this.exportToPdf(messages);
-            }
-            } catch (error) {
-            console.error('Export failed:', error);
-            alert('Export failed: ' + error.message);
-            }
-            }
-            
-            exportToCsv(messages) {
-            try {
-            let csv = 'Sender,Message,Timestamp\n';
-            messages.forEach(msg => {
-            // Escape special characters
-            const safeMessage = msg.message.replace(/"/g, '""');
-            const safeSender = msg.sender.replace(/"/g, '""');
-            csv += `"${safeSender}","${safeMessage}","${msg.timestamp}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'chat_export.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            } catch (error) {
-            console.error('CSV export error:', error);
-            alert('Failed to generate CSV: ' + error.message);
-            }
-            }
-            
-            exportToPdf(messages) {
-            try {
-            // Ensure jsPDF is loaded
-            if (typeof window.jspdf === 'undefined') {
-            throw new Error('PDF library not loaded');
-            }
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Set up PDF styling
-            doc.setFontSize(12);
-            doc.text('Chat History Export', 105, 15, null, null, 'center');
-            
-            let y = 25;
-            const lineHeight = 8;
-            const pageHeight = 280;
-            
-            messages.forEach((msg, index) => {
-            // Add sender and timestamp
-            doc.setFont(undefined, 'bold');
-            doc.text(`${msg.sender} - ${new Date(msg.timestamp).toLocaleString()}`, 14, y);
-            
-            // Add message content
-            doc.setFont(undefined, 'normal');
-            const messageLines = doc.splitTextToSize(msg.message, 180);
-            messageLines.forEach(line => {
-            y += lineHeight;
-            doc.text(line, 20, y);
-            });
-            
-            // Add spacing between messages
-            y += lineHeight * 1.5;
-            
-            // Add new page if needed
-            if (y > pageHeight && index < messages.length - 1) {
-            doc.addPage();
-            y = 20;
-            }
-            });
-            
-            doc.save('chat_export.pdf');
-            } catch (error) {
-            console.error('PDF export error:', error);
-            alert('Failed to generate PDF: ' + error.message);
-            }
-            }
-             
              toggleTaskForm() {
                 const formContainer = document.getElementById('taskFormContainer');
                 formContainer.style.display = formContainer.style.display === 'block' ? 'none' : 'block';
@@ -3646,4 +3530,5 @@ updateCoinBalances() {
 </body>
 
 </html> 
+
 

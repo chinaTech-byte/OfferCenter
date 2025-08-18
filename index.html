@@ -888,39 +888,6 @@
     height: 250px;
     margin-top: 20px;
     }
-    
-    /* Fix Notification Page Layout */
-    #notificationsPage .list-group-item {
-    display: flex;
-    flex-direction: column;
-    }
-    
-    #notificationsPage .d-flex {
-    flex-wrap: nowrap;
-    }
-    
-    /* Fix Admin Panel Layout */
-    #adminPage .tab-content {
-    position: static;
-    min-height: auto;
-    }
-    
-    #adminPage .card {
-    margin-top: 20px;
-    }
-    
-    /* Fix Chat Container Height */
-    .chat-container {
-    max-height: 60vh;
-    height: 60vh;
-    display: flex;
-    flex-direction: column;
-    }
-    
-    .chat-messages {
-    flex-grow: 1;
-    overflow-y: auto;
-    }
     .online-dot {
     display: inline-block;
     width: 10px;
@@ -2440,70 +2407,7 @@ async updateAccountStats() {
                                  }
                                  
                      
-                        addMessageToUI(senderId, message, isSent) {
-                        const chatMessages = document.getElementById('chatMessages');
-                        const messageEl = document.createElement('div');
-                        messageEl.className = `chat-message ${isSent ? 'sent' : 'received'}`;
                         
-                        // Use first 8 chars of ID for display
-                        const displayId = senderId.substring(0, 8) + (senderId.length > 8 ? '...' : '');
-                        
-                        messageEl.innerHTML = `
-                        <div class="message-content">
-                        <small class="d-block">${displayId}:</small>
-                        ${message}
-                        </div>
-                        `;
-                        
-                        chatMessages.appendChild(messageEl);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
-                        
-                        async loadChatMessages() {
-                        try {
-                        const response = await fetch('/.netlify/functions/getChatMessages');
-                        if (!response.ok) return;
-                        
-                        const messages = await response.json();
-                        const chatMessages = document.getElementById('chatMessages');
-                        
-                        // Clear only if new messages exist
-                        if (messages.length > 0) {
-                        chatMessages.innerHTML = '';
-                        
-                        messages.forEach(msg => {
-                        const isSent = msg.sender === this.currentUser.id;
-                        this.addMessageToUI(msg.sender, msg.message, isSent);
-                        });
-                        }
-                        } catch (error) {
-                        console.error('Chat load error:', error);
-                        }
-                        }
-                        
-                            
-                     async updateOnlineStatus() {
-                     try {
-                     // Update this user's status
-                     await fetch('/.netlify/functions/updateUserStatus', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ userId: this.currentUser.id })
-                     });
-                     
-                     // Get online users count
-                     const response = await fetch('/.netlify/functions/getOnlineUsers');
-                     if (response.ok) {
-                     const data = await response.json();
-                     const onlineCountEl = document.getElementById('onlineUsersCount');
-                     if (onlineCountEl) {
-                     onlineCountEl.textContent = `${data.count} online now`;
-                     }
-                     }
-                     } catch (error) {
-                     console.error('Error updating online status:', error);
-                     }
-                     }
                      
             async loadUserActivities() {
                 try {
@@ -3742,3 +3646,4 @@ updateCoinBalances() {
 </body>
 
 </html> 
+

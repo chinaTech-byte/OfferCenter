@@ -877,6 +877,38 @@
     height: 250px;
     margin-top: 20px;
     }
+        /* Fix Notification Page Layout */
+#notificationsPage .list-group-item {
+  display: flex;
+  flex-direction: column;
+}
+
+#notificationsPage .d-flex {
+  flex-wrap: nowrap;
+}
+
+/* Fix Admin Panel Layout */
+#adminPage .tab-content {
+  position: static;
+  min-height: auto;
+}
+
+#adminPage .card {
+  margin-top: 20px;
+}
+
+/* Fix Chat Container Height */
+.chat-container {
+  max-height: 60vh;
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+}
     </style>
     </head>
     <body>
@@ -3634,5 +3666,6 @@ updateCoinBalances() {
     </script>
     </body>
 </html> 
+
 
 

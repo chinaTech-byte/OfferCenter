@@ -34,10 +34,13 @@ exports.handler = async (event) => {
         created: data.created || new Date().toISOString()
       };
     } else {
-      // Create new user with default coins
+      // NEW: Calculate starting coins (1250 base + 20 referral bonus)
+      const startingCoins = 1250 + (body.referralCode ? 20 : 0);
+      
+      // Create new user with coins
       userData = {
         id: userId,
-        coins: 1250,
+        coins: startingCoins,
         tasksCompleted: 0,
         rewardsClaimed: 0,
         referrals: 0,
@@ -47,7 +50,19 @@ exports.handler = async (event) => {
 
       await userRef.set(userData);
 
-      // Process referral if exists - KEEPING YOUR ORIGINAL REFERRAL LOGIC
+      // NEW: Add transaction for referred user bonus (20 coins)
+      if (body.referralCode) {
+        const transactionRef = db.collection('transactions').doc();
+        await transactionRef.set({
+          userId: userId,
+          type: "earn",
+          amount: 20,
+          description: "Referral sign-up bonus",
+          date: new Date().toISOString()
+        });
+      }
+
+      // Process referral if exists - UPDATED
       if (body.referralCode) {
         const referralCode = body.referralCode;
         
@@ -65,9 +80,20 @@ exports.handler = async (event) => {
           const referrerDoc = await transaction.get(referrerRef);
           
           if (referrerDoc.exists) {
+            // Update referrer's coins and referral count
             transaction.update(referrerRef, {
               referrals: admin.firestore.FieldValue.increment(1),
               coins: admin.firestore.FieldValue.increment(50)
+            });
+            
+            // NEW: Add transaction for referrer (50 coins)
+            const referrerTransactionRef = db.collection('transactions').doc();
+            transaction.set(referrerTransactionRef, {
+              userId: referralCode,
+              type: "earn",
+              amount: 50,
+              description: `Referral bonus for ${userId}`,
+              date: new Date().toISOString()
             });
             
             // Mark referral as processed

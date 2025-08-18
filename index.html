@@ -1895,10 +1895,11 @@ async initUser() {
     alert('Account initialization failed. Please refresh. ' + error.message);
   }
 }
+       
        updateUserUI() {
   if (!this.currentUser) return;
   
-  // 1. KEEP USER INITIAL & USERNAME - Maintains avatar and profile display
+  // 1. USER INITIAL & USERNAME - Maintains avatar and profile display
   const userInitial = this.currentUser.id ? this.currentUser.id.charAt(0) : 'U';
   document.getElementById('userInitial').textContent = userInitial;
   
@@ -1908,25 +1909,20 @@ async initUser() {
     : this.currentUser.id;
   document.getElementById('username').textContent = `User#${displayId}`;
 
-  // 2. FIXED REFERRAL LINK - Uses shortened version
-  const parts = this.currentUser.id.split('-');
-  const referralId = parts.length >= 3 
-    ? `${parts[0]}-${parts[1]}` // "Pexoria-101149"
-    : this.currentUser.id;
-    
+  // 2. FIXED REFERRAL LINK - Uses FULL ID with dynamic base URL
+  const baseUrl = window.location.origin;
   document.getElementById('referralLink').value = 
-      `https://offercenter.netlify.app/ref/${referralId}`;
+      `${baseUrl}/ref/${this.currentUser.id}`;
   
-  // 3. KEEP COIN BALANCES & STATS - Maintains wallet functionality
+  // 3. Update coin balances and stats
   this.updateCoinBalances();
   document.getElementById('accountCoins').textContent = (this.currentUser.coins || 0).toLocaleString();
   document.getElementById('accountTasks').textContent = this.currentUser.tasksCompleted || 0;
   document.getElementById('accountRewards').textContent = this.currentUser.rewardsClaimed || 0;
   
-  // 4. KEEP LOCATION SERVICE - Maintains geolocation feature
+  // 4. Keep location service
   this.getUserLocation();
-       }
-            
+       }     
        async getUserLocation() {
                 try {
                     // First try browser geolocation
@@ -1963,19 +1959,19 @@ async initUser() {
                 }
             }
             // Add this new method to the App class
-handleReferralUrl() {
-    const path = window.location.pathname;
-    // Check if URL is a referral link
-    if (path.startsWith('/ref/')) {
-        const referralCode = path.split('/ref/')[1];
-        if (referralCode) {
-            localStorage.setItem('referralCode', referralCode);
-            // Clean URL after capturing code
-            window.history.replaceState({}, document.title, '/');
-        }
+            
+           handleReferralUrl() {
+  const path = window.location.pathname;
+  // Capture referral code from URL
+  if (path.startsWith('/ref/')) {
+    const referralCode = path.split('/ref/')[1];
+    if (referralCode) {
+      localStorage.setItem('referralCode', referralCode);
+      // Clean URL after capturing code
+      window.history.replaceState({}, document.title, '/');
     }
-        }
-        
+  }
+           }
             async initUI() {
                 await this.loadTasks();
                 await this.loadRewards();
@@ -3449,6 +3445,7 @@ updateCoinBalances() {
 </body>
 
 </html> 
+
 
 
 

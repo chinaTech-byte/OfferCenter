@@ -22,6 +22,14 @@ exports.handler = async (event) => {
     const referralCount = referralsSnapshot.size;
     const referralEarnings = referralCount * 50;
     
+    // Update user's referral count in database
+    if (referralCount > 0) {
+      const userRef = db.collection('users').doc(userId);
+      await userRef.update({
+        referrals: referralCount
+      });
+    }
+    
     return {
       statusCode: 200,
       body: JSON.stringify({

@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Add to head section -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ 
    <script>
     // Fix PDF library initialization
     document.addEventListener('DOMContentLoaded', () => {
@@ -3307,19 +3309,14 @@ updateCoinBalances() {
             document.body.classList.toggle('dark-mode');
             });
             
-            
-            // Fix notification close buttons
-            document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('notification-close')) {
-            const toast = document.getElementById('customToast');
-            const bsToast = bootstrap.Toast.getInstance(toast);
-            if (bsToast) {
-            bsToast.hide();
-            }
-            }
+            // Notification center
+            document.getElementById('notificationIcon').addEventListener('click', () => {
+            document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
             });
-            
-            
+            document.getElementById('notificationsPage').classList.add('active');
+            });
+                
             // Start earning button
             document.getElementById('startEarningBtn').addEventListener('click', () => {
             document.querySelectorAll('.page').forEach(page => {
@@ -3529,6 +3526,7 @@ updateCoinBalances() {
 </body>
 
 </html> 
+
 
 
 

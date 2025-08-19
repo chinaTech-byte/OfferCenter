@@ -31,8 +31,4 @@ exports.handler = async () => {
       body: JSON.stringify({ error: 'Failed to load messages' })
     };
   }
-};ode: 500,
-      body: JSON.stringify({ error: 'Failed to load messages' })
-    };
-  }
 };

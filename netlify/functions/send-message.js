@@ -83,4 +83,5 @@ function hasRestrictedContent(text) {
   
   return phoneRegex.test(text) || emailRegex.test(text) || urlRegex.test(text);
 }urn phoneRegex.test(text) || emailRegex.test(text) || urlRegex.test(text);
+
 }

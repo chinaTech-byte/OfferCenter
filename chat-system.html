@@ -467,6 +467,27 @@
     .notification.show {
     opacity: 1;
     }
+    .loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    }
+    
+    .loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4a6cfa;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+    }
+    
     </style>
     
       <!-- Firebase App (the core Firebase SDK) -->
@@ -522,9 +543,12 @@
         <div class="messages-container" id="messages-container">
             <div class="welcome-message">
                 <i class="fas fa-comments" style="font-size: 24px; margin-bottom: 10px;"></i>
-                <p>Welcome to the community chat!</p>
-                <p>Messages will appear here.</p>
-            </div>
+                  <div class="loading">
+                  <div class="loading-spinner"></div>
+                  <p>Loading messages...</p>
+                  </div>
+                  
+                  </div>
         </div>
         
         <div class="input-container">
@@ -538,17 +562,17 @@
         </div>
         
     </div>
-
-    <script>
+<script>
         // Firebase configuration - replace with your actual config
         const firebaseConfig = {
-            apiKey: "AIzaSyDCWEYC9mzmz1ayVneqw26a6nKal9fahoc",
-            authDomain: "portaflux-59543.firebaseapp.com",
-            projectId: "portaflux-59543",
-            storageBucket: "portaflux-59543.firebasestorage.app",
-            messagingSenderId: "130551479322",
-            appId: "1:130551479322:web:65476a2decb8c48fc065a3"
-        };
+            apiKey: "AIzaSyA_VmdBDnLbnYX8zdZs6Ol3yxJJSLn4LJY",
+            authDomain: "portafluxchat-system.firebaseapp.com",
+            projectId: "portafluxchat-system",
+            storageBucket: "portafluxchat-system.firebasestorage.app",
+            messagingSenderId: "768829431492",
+            appId: "1:768829431492:web:3953467a079f1490627391"
+            };
+            
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -583,9 +607,22 @@
         // Initialize the chat
         async function initChat() {
             try {
+                // Show loading state
+                messagesContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Connecting to chat...</p>
+                    </div>
+                `;
+                
                 // Sign in anonymously
                 const userCredential = await auth.signInAnonymously();
                 currentUser = userCredential.user;
+                
+                // Enable input fields
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                voiceButton.disabled = false;
                 
                 // Set up real-time listeners
                 setupRealTimeListeners();
@@ -593,11 +630,35 @@
                 // Set up event listeners
                 setupEventListeners();
                 
-                // Load previous messages
-                loadPreviousMessages();
+                // Remove loading indicator
+                const loadingIndicator = document.querySelector('.loading');
+                if (loadingIndicator) {
+                    loadingIndicator.remove();
+                }
+                
+                // Show welcome message if no messages
+                if (messagesContainer.children.length === 0) {
+                    const welcomeMsg = document.createElement('div');
+                    welcomeMsg.classList.add('welcome-message');
+                    welcomeMsg.innerHTML = `
+                        <i class="fas fa-comments" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p>Welcome to the community chat!</p>
+                        <p>Messages will appear here.</p>
+                    `;
+                    messagesContainer.appendChild(welcomeMsg);
+                }
             } catch (error) {
                 showNotification('Error initializing chat: ' + error.message, 'error');
                 console.error('Error initializing chat:', error);
+                
+                // Show error state
+                messagesContainer.innerHTML = `
+                    <div class="welcome-message">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px; color: #f44336;"></i>
+                        <p>Error connecting to chat</p>
+                        <p>Please refresh the page to try again</p>
+                    </div>
+                `;
             }
         }
         
@@ -605,20 +666,31 @@
         function setupRealTimeListeners() {
             // Listen for new messages
             messagesListener = db.collection('messages')
+                .where('deleted', '==', false)
                 .orderBy('timestamp', 'desc')
                 .limit(50)
                 .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            const message = {
-                                id: change.doc.id,
-                                ...change.doc.data()
-                            };
-                            addMessageToChat(message);
-                        }
+                    // Clear existing messages except welcome message
+                    const welcomeMsg = document.querySelector('.welcome-message');
+                    messagesContainer.innerHTML = '';
+                    if (welcomeMsg) {
+                        messagesContainer.appendChild(welcomeMsg);
+                    }
+                    
+                    // Add all messages
+                    snapshot.forEach(doc => {
+                        const message = {
+                            id: doc.id,
+                            ...doc.data()
+                        };
+                        addMessageToChat(message);
                     });
+                    
+                    // Scroll to bottom
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 }, error => {
                     console.error('Error listening to messages:', error);
+                    showNotification('Error loading messages: ' + error.message, 'error');
                 });
                 
             // Listen for online users count
@@ -645,31 +717,6 @@
                     });
                 }
             }, 30000);
-        }
-        
-        // Load previous messages
-        async function loadPreviousMessages() {
-            try {
-                const snapshot = await db.collection('messages')
-                    .orderBy('timestamp', 'desc')
-                    .limit(20)
-                    .get();
-                    
-                const welcomeMsg = document.querySelector('.welcome-message');
-                if (welcomeMsg && !snapshot.empty) {
-                    welcomeMsg.remove();
-                }
-                
-                snapshot.forEach(doc => {
-                    const message = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-                    addMessageToChat(message);
-                });
-            } catch (error) {
-                console.error('Error loading previous messages:', error);
-            }
         }
         
         // Set up event listeners
@@ -759,7 +806,8 @@
                             text: text,
                             userId: currentUser.uid,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                            isVoice: false
+                            isVoice: false,
+                            deleted: false
                         });
                     } catch (error) {
                         showNotification('Error sending message: ' + error.message, 'error');
@@ -778,13 +826,6 @@
                 welcomeMsg.remove();
             }
             
-            // Remove typing indicator if present
-            const typingIndicator = document.querySelector('.typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-                isSomeoneTyping = false;
-            }
-            
             const messageEl = document.createElement('div');
             messageEl.classList.add('message');
             messageEl.classList.add(message.userId === currentUser.uid ? 'own' : 'other');
@@ -795,6 +836,11 @@
             if (message.timestamp) {
                 const timestamp = message.timestamp.toDate();
                 timeText = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // If edited, show edit time
+                if (message.edited) {
+                    timeText += ' (edited)';
+                }
             }
             
             messageEl.innerHTML = `
@@ -942,7 +988,8 @@
                     text: randomMessage,
                     userId: currentUser.uid,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    isVoice: true
+                    isVoice: true,
+                    deleted: false
                 });
             } catch (error) {
                 showNotification('Error sending voice message: ' + error.message, 'error');
@@ -965,4 +1012,4 @@
         window.addEventListener('load', initChat);
     </script>
 </body>
-</html>
+</html>>

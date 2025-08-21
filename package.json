@@ -1,7 +1,7 @@
 {
   "name": "portaflux-premium-video-functions",
   "version": "1.0.0",
-  "description": "Netlify serverless functions for PortaFlux premium video platform",
+  "description": "Netlify serverless functions for PortaFlux premium video platform and community chat system",
   "main": "index.js",
   "scripts": {
     "start": "netlify dev",
@@ -13,6 +13,7 @@
     "@emailjs/nodejs": "^5.0.2",
     "@sendgrid/mail": "^8.1.5",
     "axios": "^1.9.0",
+    "csv-stringify": "^6.2.0",
     "dotenv": "^16.5.0",
     "firebase-admin": "^13.4.0",
     "form-data": "^4.0.3",
@@ -20,8 +21,7 @@
     "nodemailer": "^6.9.3",
     "node-fetch": "^2.6.7",
     "cors": "^2.8.5",
-    "uuid": "^9.0.1"
-     "csv-stringify": "^6.2.0",
+    "uuid": "^9.0.1",
     "pdfkit": "^0.13.0"
   },
   "engines": {

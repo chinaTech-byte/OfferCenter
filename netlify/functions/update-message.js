@@ -93,4 +93,5 @@ function hasRestrictedContent(text) {
   
   return phoneRegex.test(text) || emailRegex.test(text) || urlRegex.test(text);
 }mailRegex.test(text) || urlRegex.test(text);
+
 }

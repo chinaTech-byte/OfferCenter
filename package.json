@@ -21,6 +21,8 @@
     "node-fetch": "^2.6.7",
     "cors": "^2.8.5",
     "uuid": "^9.0.1"
+     "csv-stringify": "^6.2.0",
+    "pdfkit": "^0.13.0"
   },
   "engines": {
     "node": ">=16"

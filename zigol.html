@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Community Chat</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+<!-- Firebase (compat builds) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+<style>
+  :root{--bg:#0f172a;--card:#111827;--text:#e5e7eb;--accent:#22c55e;--danger:#ef4444;--warn:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:860px;margin:0 auto;padding:16px;height:100vh;display:flex;flex-direction:column;gap:12px}
+  header{display:flex;align-items:center;justify-content:space-between}
+  h1{font-size:18px;margin:0;display:flex;align-items:center;gap:10px}
+  .online{font-size:12px;opacity:.85}
+  .card{background:#111827;border:1px solid #1f2937;border-radius:16px}
+  .chat{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .list{flex:1;overflow:auto;padding:12px 12px 0}
+  .msg{padding:10px 12px;margin:8px 0;border-radius:12px;border:1px solid #1f2937;display:flex;gap:10px}
+  .me{background:#0b1324}
+  .meta{font-size:11px;color:#cbd5e1;display:flex;gap:10px;align-items:center}
+  .text{white-space:pre-wrap;word-wrap:break-word}
+  .actions{margin-left:auto;display:flex;gap:8px}
+  .toolbar{display:flex;gap:8px;align-items:center;padding:10px;border-top:1px solid #1f2937}
+  input[type="text"]{flex:1;background:#0b1324;border:1px solid #1f2937;border-radius:12px;padding:12px;color:var(--text);outline:none}
+  button{background:#1f2937;border:1px solid #334155;border-radius:12px;color:var(--text);padding:10px 12px;cursor:pointer}
+  button.primary{background:var(--accent);border-color:#16a34a;color:#062b16;font-weight:700}
+  button.danger{background:var(--danger);border-color:#dc2626}
+  button.warn{background:var(--warn);border-color:#d97706;color:#1f1300}
+  button:disabled{opacity:.6;cursor:not-allowed}
+  .dropdown{position:relative}
+  .dropdown-menu{position:absolute;right:0;top:calc(100% + 8px);background:#0b1324;border:1px solid #1f2937;border-radius:12px;min-width:210px;display:none;z-index:10}
+  .dropdown-menu.show{display:block}
+  .dropdown-menu button{display:block;width:100%;text-align:left;border-radius:0;border:0;border-bottom:1px solid #1f2937;background:transparent}
+  .dropdown-menu button:last-child{border-bottom:0}
+  .loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:20px}
+  .voice-recording{display:none;align-items:center;justify-content:center;padding:12px;background:#0b1324;border-top:1px solid #1f2937}
+  .voice-recording.active{display:flex}
+  .notif{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;border:1px solid #374151;border-radius:12px;padding:10px 14px;opacity:0;transition:.25s;z-index:1000}
+  .notif.show{opacity:1}
+  audio{max-width:260px}
+  .badge{background:#0b1324;border:1px solid #1f2937;border-radius:8px;padding:4px 8px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><i class="fa-solid fa-users-rectangle"></i> Community Chat <span id="admin-badge" class="badge" style="display:none">Admin</span></h1>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="online"><span id="online-count">0</span> online</span>
+      <div class="dropdown">
+        <button id="menu-toggle"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        <div id="dropdown-menu" class="dropdown-menu card">
+          <button id="export-csv">Export CSV</button>
+          <button id="export-pdf">Export PDF</button>
+          <button id="clear-chat" class="danger" title="Admin only">Clear Chat (Admin)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="card chat">
+    <div class="list" id="messages">
+      <div class="loading"><span>Loading messages…</span></div>
+    </div>
+
+    <div id="voice-state" class="voice-recording"><i class="fa-solid fa-microphone-lines"></i>&nbsp; Recording… tap stop to send</div>
+
+    <div class="toolbar">
+      <button id="voice-btn" title="Hold to record"><i class="fa-solid fa-microphone"></i></button>
+      <input id="message-input" type="text" placeholder="Write a message…" maxlength="2000" />
+      <button id="send-btn" class="primary">Send</button>
+    </div>
+    <div class="note" style="font-size:12px;opacity:.85;padding:6px 10px">No phone numbers, emails or links allowed.</div>
+  </div>
+</div>
+
+<div id="notification" class="notif"></div>
+
+<script>
+  // ==== Firebase Config (put your real keys) ====
+  const firebaseConfig = {
+      apiKey: "AIzaSyDCWEYC9mzmz1ayVneqw26a6nKal9fahoc",
+      authDomain: "portaflux-59543.firebaseapp.com",
+      projectId: "portaflux-59543",
+      appId: "1:130551479322:web:65476a2decb8c48fc065a3",
+      messagingSenderId: "130551479322"
+      
+      };
+
+  // ==== Initialize (PROD ONLY: no emulator, no localhost) ====
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  // ==== DOM ====
+  const messagesContainer = document.getElementById('messages');
+  const messageInput     = document.getElementById('message-input');
+  const sendButton       = document.getElementById('send-btn');
+  const voiceButton      = document.getElementById('voice-btn');
+  const voiceState       = document.getElementById('voice-state');
+  const onlineCountEl    = document.getElementById('online-count');
+  const adminBadge       = document.getElementById('admin-badge');
+  const notification     = document.getElementById('notification');
+
+  const menuToggle   = document.getElementById('menu-toggle');
+  const dropdownMenu = document.getElementById('dropdown-menu');
+  const exportCsvBtn = document.getElementById('export-csv');
+  const exportPdfBtn = document.getElementById('export-pdf');
+  const clearChatBtn = document.getElementById('clear-chat');
+
+  // ==== State ====
+  let currentUser = null;
+  let isAdmin = false;
+  let messagesListener = null;
+  let mediaRecorder = null;
+  let audioChunks = [];
+
+  // ==== Helpers ====
+  const showNotification = (msg, type='info') => {
+    notification.textContent = msg;
+    notification.style.background = type==='error' ? '#7f1d1d' : '#111827';
+    notification.classList.add('show');
+    setTimeout(()=>notification.classList.remove('show'), 2200);
+  };
+  const formatTime = ts => ts?.toDate ? ts.toDate().toLocaleString() : '';
+  const hasRestrictedContent = (t) => {
+    if (!t) return false;
+    return /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/.test(t) ||
+           /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(t) ||
+           /(https?:\/\/|www\.)\S+/i.test(t);
+  };
+
+  function renderMessage(doc){
+    const { id, text, userId, timestamp, isVoice, edited, deleted } = doc;
+    if (deleted) return null;
+    const el = document.createElement('div');
+    el.className = 'msg' + (currentUser && userId === currentUser.uid ? ' me' : '');
+    el.id = `message-${id}`;
+
+    const content = document.createElement('div');
+    content.style.flex = '1';
+    if (isVoice) {
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = text;
+      content.appendChild(audio);
+    } else {
+      const p = document.createElement('div');
+      p.className = 'text';
+      p.textContent = text || '';
+      content.appendChild(p);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = `${edited ? '(edited) ' : ''}${formatTime(timestamp)}`;
+    content.appendChild(meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const canModify = (currentUser && userId === currentUser.uid) || isAdmin;
+
+    if (canModify && !isVoice){
+      const editBtn = document.createElement('button');
+      editBtn.className = 'warn'; editBtn.title = 'Edit message';
+      editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      editBtn.onclick = async () => {
+        const newText = prompt('Edit message:', doc.text || '');
+        if (newText === null) return;
+        if (!newText.trim()) return showNotification('Empty message', 'error');
+        if (hasRestrictedContent(newText)) return showNotification('No phone/email/links', 'error');
+        try{
+          await db.collection('messages').doc(id).update({
+            text: newText.trim(),
+            edited: true,
+            editTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }catch{
+          await fetch('/.netlify/functions/update-message', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ id, text: newText.trim() })
+          });
+        }
+      };
+      actions.appendChild(editBtn);
+    }
+
+    if (canModify){
+      const delBtn = document.createElement('button');
+      delBtn.className = 'danger'; delBtn.title = 'Delete (soft)';
+      delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      delBtn.onclick = async () => {
+        if (!confirm('Delete this message for everyone?')) return;
+        try{
+          await db.collection('messages').doc(id).update({ deleted: true });
+        }catch{
+          await fetch('/.netlify/functions/delete-message', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ id })
+          });
+        }
+      };
+      actions.appendChild(delBtn);
+    }
+
+    el.appendChild(content);
+    el.appendChild(actions);
+    return el;
+  }
+
+  function addMessageToChat(doc){
+    const el = renderMessage(doc);
+    if (!el) return;
+    if (document.getElementById(el.id)) return;
+    messagesContainer.appendChild(el);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+  function updateMessageInChat(doc){
+    const el = document.getElementById(`message-${doc.id}`);
+    if (!el){ addMessageToChat(doc); return; }
+    const newEl = renderMessage(doc);
+    if (!newEl) { el.remove(); return; }
+    el.replaceWith(newEl);
+  }
+
+  function setupRealTimeListeners(){
+    if (messagesListener) messagesListener();
+    messagesListener = db.collection('messages')
+      .where('deleted','==', false)
+      .orderBy('timestamp','asc')
+      .limit(500)
+      .onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          const data = { id: change.doc.id, ...change.doc.data() };
+          if (change.type === 'added') addMessageToChat(data);
+          if (change.type === 'modified') updateMessageInChat(data);
+          if (change.type === 'removed') {
+            const el = document.getElementById(`message-${data.id}`);
+            if (el) el.remove();
+          }
+        });
+        const loading = document.querySelector('.loading');
+        if (loading) loading.remove();
+      }, err => {
+        console.error('onSnapshot error:', err);
+        // Show concise error to user
+        showNotification('Realtime connection failed', 'error');
+      });
+  }
+
+  async function initAuthAndPresence(){
+    const cred = await auth.signInAnonymously();
+    window.currentUser = cred.user;
+
+    // presence heartbeat
+    const beat = async () => {
+      try{
+        await db.collection('onlineUsers').doc(currentUser.uid).set({
+          userId: currentUser.uid,
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+          userAgent: navigator.userAgent
+        }, { merge: true });
+      }catch{}
+    };
+    beat(); setInterval(beat, 30*1000);
+
+    try {
+      const adm = await db.collection('config').doc('admins').get();
+      const uids = (adm.exists && Array.isArray(adm.data().uids)) ? adm.data().uids : [];
+      isAdmin = uids.includes(currentUser.uid);
+    }catch{ isAdmin = false; }
+    if (isAdmin) adminBadge.style.display = 'inline-block';
+  }
+
+  async function sendTextMessage(){
+    const text = messageInput.value.trim();
+    if (!text) return;
+    if (hasRestrictedContent(text)) return showNotification('No phone/email/links', 'error');
+    messageInput.value = '';
+    try{
+      await db.collection('messages').add({
+        text, userId: currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        isVoice:false, edited:false, deleted:false
+      });
+    }catch{
+      await fetch('/.netlify/functions/send-message', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text, userId: currentUser.uid, isVoice:false })
+      });
+    }
+  }
+
+  function initAudioRecording(){
+    if (!navigator.mediaDevices?.getUserMedia){
+      voiceButton.disabled = true;
+      return;
+    }
+  }
+  async function startRecording(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => { if (e.data.size) audioChunks.push(e.data); };
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type:'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64 = reader.result;
+          try{
+            await db.collection('messages').add({
+              text: base64, userId: currentUser.uid,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              isVoice:true, edited:false, deleted:false
+            });
+          }catch{
+            await fetch('/.netlify/functions/send-message', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ text: base64, userId: currentUser.uid, isVoice:true })
+            });
+          }
+        };
+        reader.readAsDataURL(blob);
+      };
+      mediaRecorder.start();
+      voiceState.classList.add('active');
+    }catch{ showNotification('Mic permission denied', 'error'); }
+  }
+  function stopRecording(){
+    if (mediaRecorder && mediaRecorder.state !== 'inactive'){
+      mediaRecorder.stop();
+      voiceState.classList.remove('active');
+    }
+  }
+
+  function setupEventListeners(){
+    const dropdown = document.getElementById('dropdown-menu');
+    document.getElementById('menu-toggle').addEventListener('click', e=>{
+      e.stopPropagation(); dropdown.classList.toggle('show');
+    });
+    document.addEventListener('click', ()=> dropdown.classList.remove('show'));
+
+    sendButton.addEventListener('click', sendTextMessage);
+    messageInput.addEventListener('keydown', e=>{
+      if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendTextMessage(); }
+    });
+
+    voiceButton.addEventListener('mousedown', startRecording);
+    voiceButton.addEventListener('touchstart', e=>{ e.preventDefault(); startRecording(); }, {passive:false});
+    voiceButton.addEventListener('mouseup', stopRecording);
+    voiceButton.addEventListener('mouseleave', stopRecording);
+    voiceButton.addEventListener('touchend', stopRecording);
+
+    document.getElementById('export-csv').addEventListener('click', async ()=>{
+      const r = await fetch('/.netlify/functions/export-chat-csv');
+      if (!r.ok) return showNotification('Export failed', 'error');
+      const b = await r.blob(); const url = URL.createObjectURL(b);
+      const a = document.createElement('a'); a.href = url; a.download = 'chat_export.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+    document.getElementById('export-pdf').addEventListener('click', async ()=>{
+      const r = await fetch('/.netlify/functions/export-chat-pdf');
+      if (!r.ok) return showNotification('Export failed', 'error');
+      const b = await r.blob(); const url = URL.createObjectURL(b);
+      const a = document.createElement('a'); a.href = url; a.download = 'chat_export.pdf'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('clear-chat').addEventListener('click', async ()=>{
+      if (!isAdmin) return showNotification('Admins only', 'error');
+      if (!confirm('Clear all messages (soft delete)?')) return;
+      const snap = await db.collection('messages').where('deleted','==', false).get();
+      const batch = db.batch(); snap.forEach(d => batch.update(d.ref, { deleted:true }));
+      await batch.commit(); showNotification('Chat cleared');
+    });
+  }
+
+  async function updateOnlineCount(){
+    try{
+      const res = await fetch('/.netlify/functions/online-count');
+      const data = await res.json(); onlineCountEl.textContent = data.count || 0;
+    }catch{ onlineCountEl.textContent = '0'; }
+  }
+
+  async function initChat(){
+    try{
+      initAudioRecording();
+      const cred = await auth.signInAnonymously(); window.currentUser = cred.user;
+      setupEventListeners();
+      (await (async()=>{ // presence
+        const beat = async () => {
+          try{
+            await db.collection('onlineUsers').doc(currentUser.uid).set({
+              userId: currentUser.uid,
+              lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+              userAgent: navigator.userAgent
+            }, { merge: true });
+          }catch{}
+        }; beat(); setInterval(beat, 30*1000);
+      })());
+      // admin badge
+      try{ const adm = await db.collection('config').doc('admins').get();
+        const uids = (adm.exists && Array.isArray(adm.data().uids)) ? adm.data().uids : [];
+        isAdmin = uids.includes(currentUser.uid); if (isAdmin) adminBadge.style.display='inline-block';
+      }catch{}
+      setupRealTimeListeners();
+      updateOnlineCount(); setInterval(updateOnlineCount, 20000);
+    }catch(e){
+      console.error(e); showNotification('Failed to initialize chat', 'error');
+    }
+  }
+
+  window.addEventListener('load', initChat);
+</script>
+</body>
+</html>

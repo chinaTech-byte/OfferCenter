@@ -587,14 +587,181 @@ body {
   font-size: 12px;
   cursor: pointer;
 }
-/* Responsive Chat System */
-@media (max-width: 1200px) {
+/* Responsive Desktop Styles */
+.chat-container {
+  max-width: 1200px;
+  width: 90%;
+  height: 90vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+}
+
+/* Header responsiveness */
+.chat-header {
+  padding: 16px 24px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.profile-image {
+  width: 45px;
+  height: 45px;
+}
+
+.profile-image i {
+  font-size: 22px;
+}
+
+.chat-title {
+  font-size: 18px;
+}
+
+.online-info {
+  font-size: 13px;
+}
+
+/* Messages container */
+.messages-container {
+  padding: 20px;
+}
+
+.message {
+  max-width: 70%;
+}
+
+/* Input area */
+.input-container {
+  padding: 16px 24px;
+}
+
+.message-input {
+  padding: 14px 18px;
+  font-size: 15px;
+}
+
+.send-button, .voice-button {
+  width: 45px;
+  height: 45px;
+}
+
+/* Edit mode */
+.edit-mode {
+  padding: 12px 24px;
+}
+
+/* Voice recording */
+.voice-recording {
+  padding: 14px 24px;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  width: 200px;
+}
+
+/* Search container */
+.search-container {
+  padding: 20px;
+}
+
+.search-input {
+  padding: 12px 18px;
+  font-size: 15px;
+}
+
+/* Media queries for different desktop sizes */
+@media screen and (max-width: 1400px) {
   .chat-container {
-    width: 90%;
-    height: 90vh;
+    width: 95%;
+    height: 92vh;
   }
 }
 
+@media screen and (max-width: 1200px) {
+  .message {
+    max-width: 75%;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .chat-container {
+    width: 98%;
+    height: 94vh;
+  }
+  
+  .messages-container {
+    padding: 16px;
+  }
+  
+  .message {
+    max-width: 80%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .chat-header {
+    padding: 14px 20px;
+  }
+  
+  .input-container {
+    padding: 14px 20px;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+}
+
+/* Large desktop screens */
+@media screen and (min-width: 1600px) {
+  .chat-container {
+    max-width: 1400px;
+  }
+  
+  .messages-container {
+    padding: 24px;
+  }
+  
+  .message {
+    max-width: 65%;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  .chat-container {
+    max-width: 1600px;
+  }
+  
+  .message {
+    max-width: 60%;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .chat-container {
+    border: 1px solid #e0e0e0;
+  }
+}
+
+/* Adjustments for hover states on devices that support hover */
+@media (hover: hover) {
+  .header-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+  }
+  
+  .send-button:hover, .voice-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .message-action:hover {
+    background: #f0f5ff;
+    border-radius: 4px;
+  }
+  }
 @media (max-width: 992px) {
   .chat-container {
     width: 95%;
@@ -1606,3 +1773,4 @@ window.addEventListener('load', initChat);
 </body>
 
 </html>
+

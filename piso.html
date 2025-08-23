@@ -578,7 +578,7 @@
  }
  
  .recording-status {
- position: fixed;
+ display: none;
  top: 10px;
  right: 10px;
  background: rgba(0, 0, 0, 0.7);
@@ -597,6 +597,7 @@
  </head>
  <body>
  <div class="notification" id="notification"></div>
+ <div class="recording-status" id="recording-status">Recording in progress...</div>
  <div class="chat-container" id="chat-container">
  <div class="admin-panel" id="admin-panel">
  <button class="admin-btn" id="export-csv-btn">Export CSV</button>
@@ -1493,3 +1494,4 @@
  </body>
 
  </html>
+

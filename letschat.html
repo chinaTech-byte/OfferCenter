@@ -588,20 +588,20 @@ body {
   cursor: pointer;
 }
 /* Responsive Desktop Styles */
+  @media screen and (max-width: 1200px) {
 .chat-container {
-  max-width: 1200px;
+  width: 100% ! important;
+  height:100% ! important;
   width: 90%;
   height: 90vh;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  margin: 0 auto;
+  margin:none;
 }
 
 /* Header responsiveness */
 .chat-header {
   padding: 16px 24px;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
 }
 
 .profile-image {
@@ -669,7 +669,7 @@ body {
   padding: 12px 18px;
   font-size: 15px;
 }
-
+  }
 /* Media queries for different desktop sizes */
 @media screen and (max-width: 1400px) {
   .chat-container {
@@ -1773,4 +1773,5 @@ window.addEventListener('load', initChat);
 </body>
 
 </html>
+
 

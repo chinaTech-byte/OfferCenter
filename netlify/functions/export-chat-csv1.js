@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 const { stringify } = require('csv-stringify/sync');
 
-// Initialize Firebase Admin
+// Initialize Firebase Admin with service account from environment variable
 if (admin.apps.length === 0) {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({
@@ -11,12 +11,14 @@ if (admin.apps.length === 0) {
 }
 
 const db = admin.firestore();
+const rtdb = admin.database();
 
-// Check if user is admin
+// Check if user is admin using Realtime Database
 async function isAdmin(userId) {
   try {
-    const adminDoc = await db.collection('admins').doc(userId).get();
-    return adminDoc.exists;
+    const adminRef = rtdb.ref(`admins/${userId}`);
+    const snapshot = await adminRef.once('value');
+    return snapshot.exists();
   } catch (error) {
     console.error('Error checking admin status:', error);
     return false;
@@ -108,7 +110,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'text/c',
+        'Content-Type': 'text/csv',
         'Content-Disposition': 'attachment; filename=chat-history.csv',
         'Access-Control-Allow-Origin': '*'
       },

@@ -44,9 +44,9 @@ exports.handler = async (event) => {
       text: message,
       userId: userId,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      isVoice: isVoice || null,
+      isVoice: isVoice || false,
       deleted: false,
-      isAdmin: isAdmin || null,
+      isAdmin: isAdmin || false,
       fileUrl: fileUrl || null,
       fileName: fileName || null
     });
@@ -69,3 +69,4 @@ exports.handler = async (event) => {
   }
 
 };
+

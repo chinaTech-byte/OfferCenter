@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Chat</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<!-- Firebase Authentication -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+.chat-container {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chat-header {
+  background: #4a6cfa;
+  color: white;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.profile-image-container {
+  position: absolute;
+  margin-right:20px;
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  z-index: 2;
+  position: relative;
+}
+
+.profile-image i {
+  color: #4a6cfa;
+  font-size: 20px;
+}
+
+.profile-background {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  top: -5px;
+  left: -5px;
+  z-index: 1;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-title {
+  font-weight: 600;
+  font-size: 16;
+  margin-bottom: 2px;
+  position: relative;
+  z-index: 2;
+}
+.online-info {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+@keyframes blink {
+  0% {
+    box-shadow: 0 0 0 0 rgba(100, 206, 131, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(100, 206, 131, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(100, 206, 131, 0);
+  }
+}
+.online-indicator {
+  background: #4CAF50;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 10px rgba(100, 206, 131, 0.7);
+  animation: blink 2s infinite;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 100;
+}
+
+.header-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+  transition: background 0.2s;
+  font-size: 14px;
+}
+
+.dropdown-menu a i {
+  margin-right: 8px;
+  width: 16px;
+  text-align: center;
+}
+
+.dropdown-menu a:hover {
+  background: #f0f5ff;
+  color: #4a6cfa;
+}
+
+.messages-container {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.own {
+  align-self: flex-end;
+}
+
+.message-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.message-user {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a6cfa;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #999;
+  margin-left: 8px;
+}
+
+.message-content {
+  padding: 10px 14px;
+  border-radius: 18px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message.other .message-content {
+  background: #e9e9eb;
+  border-top-left-radius: 4px;
+}
+
+.message.own .message-content {
+  background: #4a6cfa;
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.message-actions {
+  display: none;
+  position: absolute;
+  bottom: -20px;
+  right: 10px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.message:hover .message-actions {
+  display: flex;
+}
+
+.message-action {
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.message-action:hover {
+  color: #4a6cfa;
+}
+
+.input-container {
+  display: flex;
+  padding: 12px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 24px;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  margin-right: 8px;
+}
+
+.message-input:focus {
+  border-color: #4a6cfa;
+}
+
+.send-button, .voice-button {
+  background: #4a6cfa;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: white;
+  margin-left: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.send-button:hover, .voice-button:hover {
+  background: #3a5cd8;
+}
+
+.voice-button {
+  background: #4CAF50;
+}
+
+.voice-button:hover {
+  background: #3d8b40;
+}
+
+.voice-recording {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: #ffebee;
+  color: #d32f2f;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.voice-recording.active {
+  display: flex;
+}
+
+.recording-dot {
+  width: 10px;
+  height: 10px;
+  background: #d32f2f;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.edit-mode {
+  background: #fff8e1;
+  padding: 10px 16px;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #5d4037;
+  border-bottom: 1px solid #ffe0b2;
+}
+
+.edit-mode.active {
+  display: flex;
+}
+
+.edit-mode-cancel {
+  background: none;
+  border: none;
+  color: #5d4037;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.edit-mode-cancel:hover {
+  background: rgba(93, 64, 55, 0.1);
+}
+
+.welcome-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.voice-message-indicator {
+  display: flex;
+  align-items: center;
+  padding: 18px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50px;
+  margin-top: 4px;
+}
+
+.voice-message-indicator i {
+  margin-right: 8px;
+  color: #4a6cfa;
+}
+
+.system-notification {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #e9e9eb;
+  border-radius: 18px;
+  align-self: flex-start;
+  margin-bottom: 16px;
+  max-width: 100px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: #999;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: typingAnimation 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.notification.show {
+  opacity: 1;
+}
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4a6cfa;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}                                     
+.admin-panel {
+  background: #f5f5f5;
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  display: none;
+}
+
+.admin-panel.active {
+  display: block;
+}
+
+.admin-btn {
+  background: #ff5722;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 8px;
+  font-size: 12px;
+}
+
+/* Hide Firebase internal elements */
+.firebase-auto-detect {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+}
+
+.recording-timer {
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.search-container {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 1000;
+  padding: 10px;
+  flex-direction: column;
+}
+
+.search-container.active {
+  display: flex;
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  outline: none;
+  font-size: 14px;
+}
+
+.close-search {
+  background: none;
+  border: none;
+  font-size: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.cancel-recording-btn {
+  margin-left: 10px; 
+  background: #ff5722; 
+  color: white; 
+  border: none; 
+  padding: 4px 8px; 
+  border-radius: 4px; 
+  font-size: 12px;
+  cursor: pointer;
+}
+/* Responsive Desktop Styles */
+  @media screen and (max-width: 1200px) {
+.chat-container {
+  width: 100% ! important;
+  height:100% ! important;
+  width: 90%;
+  height: 90vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  margin:none;
+}
+
+/* Header responsiveness */
+.chat-header {
+  padding: 16px 24px;
+}
+
+.profile-image {
+  width: 45px;
+  height: 45px;
+}
+
+.profile-image i {
+  font-size: 22px;
+}
+
+.chat-title {
+  font-size: 18px;
+}
+
+.online-info {
+  font-size: 13px;
+}
+
+/* Messages container */
+.messages-container {
+  padding: 20px;
+}
+
+.message {
+  max-width: 70%;
+}
+
+/* Input area */
+.input-container {
+  padding: 16px 24px;
+}
+
+.message-input {
+  padding: 14px 18px;
+  font-size: 15px;
+}
+
+.send-button, .voice-button {
+  width: 45px;
+  height: 45px;
+}
+
+/* Edit mode */
+.edit-mode {
+  padding: 12px 24px;
+}
+
+/* Voice recording */
+.voice-recording {
+  padding: 14px 24px;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  width: 200px;
+}
+
+/* Search container */
+.search-container {
+  padding: 20px;
+}
+
+.search-input {
+  padding: 12px 18px;
+  font-size: 15px;
+}
+  }
+/* Media queries for different desktop sizes */
+@media screen and (max-width: 1400px) {
+  .chat-container {
+    width: 95%;
+    height: 92vh;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .message {
+    max-width: 75%;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .chat-container {
+    width: 98%;
+    height: 94vh;
+  }
+  
+  .messages-container {
+    padding: 16px;
+  }
+  
+  .message {
+    max-width: 80%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .chat-header {
+    padding: 14px 20px;
+  }
+  
+  .input-container {
+    padding: 14px 20px;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+}
+
+/* Large desktop screens */
+@media screen and (min-width: 1600px) {
+  .chat-container {
+    max-width: 1400px;
+  }
+  
+  .messages-container {
+    padding: 24px;
+  }
+  
+  .message {
+    max-width: 65%;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  .chat-container {
+    max-width: 1600px;
+  }
+  
+  .message {
+    max-width: 60%;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .chat-container {
+    border: 1px solid #e0e0e0;
+  }
+}
+
+/* Adjustments for hover states on devices that support hover */
+@media (hover: hover) {
+  .header-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+  }
+  
+  .send-button:hover, .voice-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .message-action:hover {
+    background: #f0f5ff;
+    border-radius: 4px;
+  }
+  }
+@media (max-width: 992px) {
+  .chat-container {
+    width: 95%;
+    height: 92vh;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 0;
+    display: block;
+  }
+  
+  .chat-container {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  
+  .chat-header {
+    padding: 12px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .messages-container {
+    flex: 1;
+    padding: 15px 10px;
+    padding-bottom: 70px; /* Space for input */
+  }
+  
+  .input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px 15px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    z-index: 100;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+  
+  .message-content {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  
+  .header-btn {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .send-button, .voice-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 576px) {
+  .chat-header {
+    padding: 12px 12px;
+  }
+  
+  .profile-image {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .profile-image i {
+    font-size: 18px;
+  }
+  
+  .chat-title {
+    font-size: 16px;
+  }
+  
+  .online-info {
+    font-size: 12px;
+  }
+  
+  .header-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+  
+  .message-content {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .message-user {
+    font-size: 13px;
+  }
+  
+  .message-time {
+    font-size: 11px;
+  }
+  
+  .input-container {
+    padding:6px 2px;
+  }
+  
+  .message-input {
+    padding:none;
+    font-size: 15px;
+  }
+  
+  .send-button, .voice-button {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+  
+  .dropdown-menu {
+    width: 200px;
+    right: 5px;
+  }
+}
+
+@media (max-width: 400px) {
+  .header-info {
+    max-width: 60%;
+  }
+  
+  .chat-title {
+    font-size: 15px;
+  }
+  
+  .online-info {
+    font-size: 11px;
+  }
+  
+  .message {
+    max-width: 95%;
+  }
+  
+  .message-content {
+    padding: 8px 10px;
+  }
+  
+  .message-input {
+    padding: 10px 14px;
+  }
+  
+  .send-button, .voice-button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Fix for mobile viewport units */
+@media (max-height: 700px) {
+  .chat-container {
+    height: 100vh;
+    width:100%
+  }
+  
+  .messages-container {
+    padding-bottom: 80px;
+  }
+}
+
+/* Prevent zoom on input focus for mobile */
+@media (max-width: 768px) {
+  input, textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
+
+  
+  .input-container {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+/* ... (all your existing CSS remains the same) ... */
+</style>
+</head>
+<body>
+<div class="notification" id="notification"></div>
+
+<div class="chat-container" id="chat-container">
+  <div class="search-container" id="search-container">
+    <div class="search-header">
+      <input type="text" class="search-input" id="search-input" placeholder="Search by user ID...">
+      <button class="close-search" id="close-search"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <div class="chat-header">
+    <div class="profile-image">
+      <i class="fas fa-user"></i>
+    </div>
+
+    <div class="header-info">
+      <div class="chat-title">Community Chat</div>
+      <div class="online-info">
+        <div class="online-indicator"></div>
+        <span id="online-count">0 online</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="header-btn" id="search-btn">
+        <i class="fas fa-search"></i>
+      </button>
+      <button class="header-btn" id="menu-toggle">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+    </div>
+
+    <div class="dropdown-menu" id="dropdown-menu">
+      <a href="#" id="about-link"><i class="fas fa-info-circle"></i> About Us</a>
+      <a href="#" id="privacy-link"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+    </div>
+  </div>
+
+  <div class="edit-mode" id="edit-mode">
+    <div class="edit-mode-text">Editing message</div>
+    <button class="edit-mode-cancel" id="edit-cancel">Cancel</button>
+  </div>
+
+  <div class="voice-recording" id="voice-recording">
+    <div class="recording-dot"></div>
+    <span id="recording-text">Recording... </span>
+    <span id="recording-timer" class="recording-timer">0:00</span>
+    <button id="cancel-recording" class="cancel-recording-btn">Cancel</button>
+  </div>
+
+  <div class="messages-container" id="messages-container">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <p>Loading messages...</p>
+    </div>
+  </div>
+
+  <div class="input-container">
+    <input type="text" class="message-input" id="message-input" placeholder="Type your message..." disabled>
+    <button class="voice-button" id="voice-button" disabled>
+      <i class="fas fa-microphone"></i>
+    </button>
+    <button class="send-button" id="send-button" disabled>
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDCWEYC9mzmz1ayVneqw26a6nKal9fahoc",
+  authDomain: "portaflux-59543.firebaseapp.com",
+  projectId: "portaflux-59543",
+  storageBucket: "portaflux-59543.firebasestorage.app",
+  messagingSenderId: "130551479322",
+  appId: "1:130551479322:web:65476a2decb8c48fc065a3",
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// DOM Elements
+const menuToggle = document.getElementById('menu-toggle');
+const dropdownMenu = document.getElementById('dropdown-menu');
+const messagesContainer = document.getElementById('messages-container');
+const messageInput = document.getElementById('message-input');
+const sendButton = document.getElementById('send-button');
+const voiceButton = document.getElementById('voice-button');
+const voiceRecording = document.getElementById('voice-recording');
+const recordingText = document.getElementById('recording-text');
+const recordingTimer = document.getElementById('recording-timer');
+const cancelRecording = document.getElementById('cancel-recording');
+const onlineCount = document.getElementById('online-count');
+const editMode = document.getElementById('edit-mode');
+const editCancel = document.getElementById('edit-cancel');
+const searchBtn = document.getElementById('search-btn');
+const notification = document.getElementById('notification');
+const searchContainer = document.getElementById('search-container');
+const searchInput = document.getElementById('search-input');
+const closeSearch = document.getElementById('close-search');
+const searchResults = document.getElementById('search-results');
+
+// State variables
+let currentUser = null;
+let onlineUsers = 0;
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let editMessageId = null;
+let messagesListener = null;
+let onlineUsersListener = null;
+let recordingInterval = null;
+let recordingSeconds = 0;
+let allMessages = [];
+let isCancelingRecording = false;
+let mediaStream = null;
+let userPresenceRef = null;
+let isUserOnline = false;
+let onlineInterval = null;
+
+// Initialize the chat
+async function initChat() {
+  try {
+    // Show loading state
+    messagesContainer.innerHTML = `
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading messages...</p>
+      </div>
+    `;
+
+    // Wait for auth to be ready
+    await new Promise((resolve, reject) => {
+      const unsubscribe = auth.onAuthStateChanged(user => {
+        unsubscribe();
+        resolve(user);
+      }, reject);
+    });
+
+    // Sign in anonymously
+    const userCredential = await auth.signInAnonymously();
+    currentUser = userCredential.user;
+
+    // Enable input fields
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+    voiceButton.disabled = false;
+
+    // Set up real-time listeners
+    setupRealTimeListeners();
+
+    // Set up event listeners
+    setupEventListeners();
+
+    // Initialize audio recording
+    initAudioRecording();
+
+    // Set up user presence
+    setupUserPresence();
+
+    // Remove loading indicator
+    const loadingIndicator = document.querySelector('.loading');
+    if (loadingIndicator) {
+      loadingIndicator.remove();
+    }
+
+    // Show welcome message if no messages
+    if (messagesContainer.children.length === 0) {
+      const welcomeMsg = document.createElement('div');
+      welcomeMsg.classList.add('welcome-message');
+      welcomeMsg.innerHTML = `
+        <i class="fas fa-comments" style="font-size: 24px; margin-bottom: 10px;"></i>
+        <p>Welcome to the community chat!</p>
+        <p>Messages will appear here please wait while we load messages...</p>
+      `;
+      messagesContainer.appendChild(welcomeMsg);
+    }
+  } catch (error) {
+    console.error('Error initializing chat:', error);
+    showNotification('Error connecting to chat: ' + error.message, 'error');
+    
+    // Show error state
+    messagesContainer.innerHTML = `
+      <div class="welcome-message">
+        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px; color: #f44336;"></i>
+        <p>Error connecting to chat</p>
+        <p>Please refresh the page to try again</p>
+      </div>
+    `;
+  }
+}
+
+// Initialize audio recording
+function initAudioRecording() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showNotification('Audio recording is not supported in your browser', 'error');
+    voiceButton.disabled = true;
+  }
+}
+
+// Set up real-time listeners
+function setupRealTimeListeners() {
+  // Listen for new messages
+  messagesListener = db.collection('messages')
+    .where('deleted', '==', false)
+    .orderBy('timestamp', 'asc')
+    .limit(100)
+    .onSnapshot(snapshot => {
+      // Clear existing messages except welcome message
+      const welcomeMsg = document.querySelector('.welcome-message');
+      messagesContainer.innerHTML = '';
+      if (welcomeMsg) {
+        messagesContainer.appendChild(welcomeMsg);
+      }
+
+      // Reset allMessages array
+      allMessages = [];
+
+      // Add all messages
+      snapshot.forEach(doc => {
+        const message = {
+          id: doc.id,
+          ...doc.data()
+        };
+        allMessages.push(message);
+        addMessageToChat(message);
+      });
+
+      // Scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }, error => {
+      console.error('Error listening to messages:', error);
+      showNotification('Error loading messages: ' + error.message, 'error');
+    });
+
+  // Update online count periodically
+  updateOnlineCount();
+  onlineInterval = setInterval(updateOnlineCount, 10000);
+}
+
+// Update online count using serverless function
+async function updateOnlineCount() {
+  try {
+    const response = await fetch('/.netlify/functions/online-count1');
+    if (response.ok) {
+      const result = await response.json();
+      onlineCount.textContent = `${result.count} online`;
+    }
+  } catch (error) {
+    console.error('Error getting online count:', error);
+  }
+}
+
+// Set up user presence system
+function setupUserPresence() {
+  if (!currentUser) return;
+  
+  // Create a reference to this user's presence data
+  userPresenceRef = db.collection('onlineUsers').doc(currentUser.uid);
+  
+  // Set initial user presence data
+  userPresenceRef.set({
+    userId: currentUser.uid,
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+    userAgent: navigator.userAgent,
+    status: 'online'
+  }).then(() => {
+    isUserOnline = true;
+  }).catch(error => {
+    console.error('Error adding to online users:', error);
+  });
+
+  // Update last seen periodically
+  const presenceInterval = setInterval(() => {
+    if (currentUser && isUserOnline) {
+      userPresenceRef.update({
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(error => {
+        console.error('Error updating online status:', error);
+      });
+    }
+  }, 30000);
+
+  // Set up beforeunload handler to mark user as offline
+  window.addEventListener('beforeunload', () => {
+    if (currentUser && isUserOnline) {
+      // Use serverless function to mark user as offline
+      fetch('/.netlify/functions/set-user-offline1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentUser.uid }),
+        keepalive: true
+      }).catch(error => {
+        console.error('Error setting user offline:', error);
+      });
+    }
+
+    // Clear intervals
+    if (onlineInterval) {
+      clearInterval(onlineInterval);
+    }
+    clearInterval(presenceInterval);
+  });
+}
+
+// Set up event listeners
+function setupEventListeners() {
+  // Menu toggle
+  menuToggle.addEventListener('click', () => {
+    dropdownMenu.classList.toggle('show');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!menuToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+      dropdownMenu.classList.remove('show');
+    }
+  });
+
+  // Search button
+  searchBtn.addEventListener('click', () => {
+    searchContainer.classList.add('active');
+    searchInput.focus();
+  });
+
+  // Close search
+  closeSearch.addEventListener('click', () => {
+    searchContainer.classList.remove('active');
+    searchResults.innerHTML = '';
+  });
+
+  // Search input
+  searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.trim().toLowerCase();
+    if (searchTerm.length > 2) {
+      performSearch(searchTerm);
+    } else {
+      searchResults.innerHTML = '';
+    }
+  });
+
+  // Send message on button click
+  sendButton.addEventListener('click', sendMessage);
+
+  // Send message on Enter key
+  messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+  // Voice message functionality
+  voiceButton.addEventListener('click', toggleVoiceRecording);
+
+  // Cancel recording button
+  cancelRecording.addEventListener('click', handleCancelRecording);
+
+  // Edit mode cancel
+  editCancel.addEventListener('click', cancelEdit);
+
+  // About and Privacy links
+  document.getElementById('about-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    dropdownMenu.classList.remove('show');
+    showNotification('About Us: This is a community chat system designed for real-time communication.');
+  });
+
+  document.getElementById('privacy-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    dropdownMenu.classList.remove('show');
+    showNotification('Privacy Policy: We value your privacy. Your messages are secure and we do not share your data with third parties.');
+  });
+}
+
+// Perform search by user ID
+function performSearch(searchTerm) {
+  const filteredMessages = allMessages.filter(message => 
+    message.userId.toLowerCase().includes(searchTerm)
+  );
+  
+  searchResults.innerHTML = '';
+  
+  if (filteredMessages.length === 0) {
+    searchResults.innerHTML = '<div class="welcome-message">No messages found</div>';
+    return;
+  }
+  
+  filteredMessages.forEach(message => {
+    const messageEl = createMessageElement(message);
+    searchResults.appendChild(messageEl);
+  });
+}
+
+// Create message element for search results
+function createMessageElement(message) {
+  const messageEl = document.createElement('div');
+  messageEl.classList.add('message');
+  messageEl.classList.add(message.userId === currentUser.uid ? 'own' : 'other');
+
+  // Format timestamp
+  let timeText = 'Just now';
+  if (message.timestamp) {
+    const timestamp = message.timestamp.toDate();
+    timeText = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // Create message content based on type
+// Replace the message content section with:
+let messageContentHTML = '';
+if (message.isVoice) {
+    messageContentHTML = `
+        <div class="voice-message-indicator">
+            <i class="fas fa-microphone"></i>
+            <span>Voice message</span>
+            <audio controls style="margin-left: 10px;">
+                <source src="data:audio/webm;base64,${message.text}"type="audio/webm">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    `;
+} else {
+    messageContentHTML = message.text;
+}
+
+  messageEl.innerHTML = `
+    <div class="message-info">
+      <div class="message-user">${message.userId === currentUser.uid ? 'You' : 'User ' + message.userId.substring(0, 6)}</div>
+      <div class="message-time">${timeText}</div>
+    </div>
+    <div class="message-content">
+      ${messageContentHTML}
+    </div>
+  `;
+
+  return messageEl;
+}
+
+// Toggle voice recording
+function toggleVoiceRecording() {
+  if (isRecording) {
+    stopVoiceRecording();
+  } else {
+    startVoiceRecording();
+  }
+}
+
+// Start voice recording
+// In the startVoiceRecording function, add a timeout to stop recording after 2 minutes
+// Start voice recording
+async function startVoiceRecording() {
+  try {
+    isCancelingRecording = false;
+    
+    // Request microphone access
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    // Initialize media recorder
+    mediaRecorder = new MediaRecorder(mediaStream);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (!isCancelingRecording) {
+        audioChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      // Only send if not canceling
+      if (!isCancelingRecording && audioChunks.length > 0) {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        sendAudioMessage(audioBlob);
+      }
+      
+      // Clean up media stream
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      
+      // Clear the warning timer
+      if (window.recordingWarningTimer) {
+        clearTimeout(window.recordingWarningTimer);
+      }
+    };
+
+    mediaRecorder.start();
+    isRecording = true;
+    voiceRecording.classList.add('active');
+    recordingText.textContent = "Recording...";
+    voiceButton.innerHTML = '<i class="fas fa-stop"></i>';
+    
+    // Start recording timer
+    recordingSeconds = 0;
+    recordingInterval = setInterval(() => {
+      recordingSeconds++;
+      const minutes = Math.floor(recordingSeconds / 60);
+      const seconds = recordingSeconds % 60;
+      recordingTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      // Show warning at 2 minutes but don't stop recording
+      if (recordingSeconds === 120000) {
+        showNotification('Recording limit reached. You can continue recording, but very long recordings might not be sent successfully.', 'warning');
+      }
+    }, 1000);
+
+  } catch (error) {
+    showNotification('Error accessing microphone: ' + error.message, 'error');
+  }
+}
+
+// Stop voice recording
+function stopVoiceRecording() {
+  if (mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    isRecording = false;
+    voiceRecording.classList.remove('active');
+    voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+    
+    // Clear recording timer
+    if (recordingInterval) {
+      clearInterval(recordingInterval);
+      recordingInterval = null;
+    }
+    recordingTimer.textContent = "0:00";
+  }
+}
+
+// Handle cancel recording
+function handleCancelRecording() {
+  // Immediately update UI for better responsiveness
+  voiceRecording.classList.remove('active');
+  voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+  recordingTimer.textContent = "0:00";
+  
+  // Clear recording timer
+  if (recordingInterval) {
+    clearInterval(recordingInterval);
+    recordingInterval = null;
+  }
+  
+  // Set cancel flag
+  isCancelingRecording = true;
+  
+  // Stop media recorder if it exists
+  if (mediaRecorder && isRecording) {
+    try {
+      mediaRecorder.stop();
+    } catch (e) {
+      console.log('MediaRecorder already stopped');
+    }
+    isRecording = false;
+  }
+  
+  // Stop media stream if it exists
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
+  }
+  
+  // Clear audio chunks
+  audioChunks = [];
+  
+  showNotification('Recording cancelled');
+}
+
+// Send audio message (direct to Firestore for binary data)
+// Send audio message using serverless function
+async function sendAudioMessage(audioBlob) {
+  try {
+    // Convert blob to base64
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Audio = reader.result.split(',')[1];
+      
+      // Send audio message using serverless function
+      const response = await fetch('/.netlify/functions/send-user-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: base64Audio,
+          userId: currentUser.uid,
+          isVoice: true
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+      
+      showNotification('Audio message sent successfully');
+    };
+    reader.readAsDataURL(audioBlob);
+  } catch (error) {
+    console.error('Error sending audio message:', error);
+    showNotification('Error sending audio message: ' + error.message, 'error');
+  }
+}
+// Send a message using serverless function
+async function sendMessage() {
+  const text = messageInput.value.trim();
+
+  if (text) {
+    try {
+      if (editMessageId) {
+        // Edit existing message using serverless function
+        await editExistingMessage(editMessageId, text);
+        editMessageId = null;
+        editMode.classList.remove('active');
+      } else {
+        // Create new message using serverless function
+        const response = await fetch('/.netlify/functions/send-user-message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: text,
+            userId: currentUser.uid
+          }),
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error);
+        }
+      }
+
+      messageInput.value = '';
+    } catch (error) {
+      console.error('Error sending message:', error);
+      showNotification('Error: ' + error.message, 'error');
+    }
+  }
+}
+
+// Add this function to check message size
+function isMessageTooLarge(message, isVoice = false) {
+  if (!isVoice) return false; // Only check size for voice messages
+  
+  // Calculate approximate size in bytes (base64 is about 4/3 of original size)
+  const base64Size = message.length;
+  const approximateBinarySize = base64Size * 0.75;
+  
+  // Firestore document limit is 1MB (1,048,576 bytes)
+  // We'll set a conservative limit of 900KB to be safe
+  return approximateBinarySize > 900 * 1024;
+}
+
+// Then modify the sendAudioMessage function to include size check:
+async function sendAudioMessage(audioBlob) {
+  try {
+    // Convert blob to base64
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Audio = reader.result.split(',')[1];
+      
+      // Check if audio is too large
+      if (isMessageTooLarge(base64Audio, true)) {
+        showNotification('Audio message is too long. Please keep recordings under 2 minutes.', 'error');
+        return;
+      }
+      
+      // Send audio message using serverless function
+      const response = await fetch('/.netlify/functions/send-user-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: base64Audio,
+          userId: currentUser.uid,
+          isVoice: true
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error);
+      }
+      
+      showNotification('Audio message sent successfully');
+    };
+    reader.readAsDataURL(audioBlob);
+  } catch (error) {
+    console.error('Error sending audio message:', error);
+    showNotification('Error sending audio message: ' + error.message, 'error');
+  }
+}
+// Edit existing message using serverless function
+async function editExistingMessage(messageId, newText) {
+  try {
+    const response = await fetch('/.netlify/functions/update-message1', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messageId: messageId,
+        newText: newText,
+        userId: currentUser.uid
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+  } catch (error) {
+    console.error('Error editing message:', error);
+    showNotification('Error: ' + error.message, 'error');
+    throw error;
+  }
+}
+
+// Add message to chat UI
+function addMessageToChat(message) {
+  const welcomeMsg = document.querySelector('.welcome-message');
+  if (welcomeMsg) {
+    welcomeMsg.remove();
+  }
+
+  // Check if message already exists
+  if (document.getElementById(`message-${message.id}`)) {
+    return;
+  }
+
+  const messageEl = document.createElement('div');
+  messageEl.classList.add('message');
+  messageEl.classList.add(message.userId === currentUser.uid ? 'own' : 'other');
+  messageEl.id = `message-${message.id}`;
+
+  // Format timestamp
+  let timeText = 'Just now';
+  if (message.timestamp) {
+    const timestamp = message.timestamp.toDate();
+    timeText = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // If edited, show edit time
+    if (message.edited) {
+      timeText += ' (edited)';
+    }
+  }
+ 
+ // Create message content based on type
+ let messageContentHTML = '';
+ if (message.isVoice) {
+ messageContentHTML = `
+ <div class="voice-message-indicator">
+ <i class="fas fa-microphone"></i>
+ <span>Voice message</span>
+ <audio controls style="margin-left: 10px;">
+ <source src="data:audio/webm;base64,${message.text}" type="audio/webm">
+ Your browser does not support the audio element.
+ </audio>
+ </div>
+ `;
+ } else {
+    messageContentHTML = message.text;
+  }
+
+  // Audio messages don't have edit button
+  const showEditButton = message.userId === currentUser.uid && !message.isVoice;
+  
+  messageEl.innerHTML = `
+    <div class="message-info">
+      <div class="message-user">${message.userId === currentUser.uid ? 'You' : 'User ' + message.userId.substring(0, 6)}</div>
+      <div class="message-time">${timeText}</div>
+    </div>
+    <div class="message-content">
+      ${messageContentHTML}
+      ${message.userId === currentUser.uid ? `
+      <div class="message-actions">
+        ${showEditButton ? `<button class="message-action edit-btn" data-id="${message.id}"><i class="fas fa-edit"></i></button>` : ''}
+        <button class="message-action delete-btn" data-id="${message.id}"><i class="fas fa-trash"></i></button>
+      </div>
+      ` : ''}
+    </div>
+  `;
+
+  messagesContainer.appendChild(messageEl);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // Add event listeners for edit/delete buttons
+  if (message.userId === currentUser.uid) {
+    if (showEditButton) {
+      const editBtn = messageEl.querySelector('.edit-btn');
+      editBtn.addEventListener('click', () => {
+        editMessage(message.id, message.text);
+      });
+    }
+    
+    const deleteBtn = messageEl.querySelector('.delete-btn');
+    deleteBtn.addEventListener('click', () => {
+      deleteMessage(message.id);
+    });
+  }
+}
+
+// Edit message
+function editMessage(messageId, messageText) {
+  messageInput.value = messageText;
+  messageInput.focus();
+
+  editMessageId = messageId;
+  editMode.classList.add('active');
+}
+
+// Cancel edit
+function cancelEdit() {
+  editMessageId = null;
+  editMode.classList.remove('active');
+  messageInput.value = '';
+}
+
+// Delete message using serverless function
+async function deleteMessage(messageId) {
+  try {
+    const response = await fetch('/.netlify/functions/delete-message1', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        messageId, 
+        userId: currentUser.uid 
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+
+    // Remove from UI
+    const messageEl = document.getElementById(`message-${messageId}`);
+    if (messageEl) {
+      messageEl.remove();
+    }
+
+    // Show welcome message if no messages left
+    if (messagesContainer.children.length === 0) {
+      const welcomeMsg = document.createElement('div');
+      welcomeMsg.classList.add('welcome-message');
+      welcomeMsg.innerHTML = `
+        <i class="fas fa-comments" style="font-size: 24px; margin-bottom: 10px;"></i>
+        <p>Welcome to the community chat!</p>
+        <p>Messages will appear here.</p>
+      `;
+      messagesContainer.appendChild(welcomeMsg);
+    }
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    showNotification('Error: ' + error.message, 'error');
+  }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+  notification.textContent = message;
+  notification.style.background = type === 'error' ? '#f44336' : '#333';
+  notification.classList.add('show');
+
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
+}
+
+// Initialize the chat when page loads
+window.addEventListener('load', initChat);
+</script>
+</body>
+</html> '#f44336' : '#333';
+  notification.classList.add('show');
+
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
+}
+
+// Initialize the chat when page loads
+window.addEventListener('load', initChat);
+</script>
+</body>
+</html>

@@ -1592,7 +1592,7 @@ async function sendMessage() {
         editMode.classList.remove('active');
       } else {
         // Create new message using serverless function
-        const response = await fetch('/.netlify/functions/send-message1', {
+        const response = await fetch('/.netlify/functions/messages-get1', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1808,4 +1808,5 @@ function showNotification(message, type = 'info') {
 window.addEventListener('load', initChat);
 </script>
 </body>
+
 </html>

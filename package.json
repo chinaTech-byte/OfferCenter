@@ -13,18 +13,29 @@
     "@emailjs/nodejs": "^5.0.2",
     "@sendgrid/mail": "^8.1.5",
     "axios": "^1.9.0",
+    "busboy": "^1.6.0",
+    "cors": "^2.8.5",
     "csv-stringify": "^6.2.0",
     "dotenv": "^16.5.0",
     "firebase-admin": "^13.4.0",
     "form-data": "^4.0.3",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^6.9.3",
     "node-fetch": "^2.6.7",
-    "cors": "^2.8.5",
-    "uuid": "^9.0.1",
-    "pdfkit": "^0.13.0"
+    "nodemailer": "^6.9.3",
+    "pdfkit": "^0.13.0",
+    "uuid": "^9.0.1"
   },
   "engines": {
     "node": ">=16"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chinaTech-byte/OfferCenter.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/chinaTech-byte/OfferCenter/issues"
+  },
+  "homepage": "https://github.com/chinaTech-byte/OfferCenter#readme"
 }

@@ -1,7 +1,6 @@
 const admin = require('firebase-admin');
 const Busboy = require('busboy');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
 
 // Initialize Firebase Admin
 if (admin.apps.length === 0) {
@@ -11,6 +10,13 @@ if (admin.apps.length === 0) {
     databaseURL: process.env.FIREBASE_DATABASE_URL
   });
 }
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const db = admin.firestore();
 
@@ -76,23 +82,21 @@ exports.handler = async (event) => {
             });
           }
           
-          // Generate a unique filename
-          const timestamp = Date.now();
-          const filename = `voice-${userId}-${timestamp}.webm`;
-          
-          // In a real implementation, you would save to a persistent storage
-          // For Netlify, you could use their built-in form handling or a service like Cloudinary
-          // For this example, we'll store the audio URL in Firestore without the actual file
-          // In a production app, you would upload to a storage service and get a URL
-          
-          // For demo purposes, we'll create a data URL (not recommended for large files)
-          // In production, use a proper storage service
+          // Convert buffer to base64 for Cloudinary upload
           const base64Audio = audioFile.buffer.toString('base64');
-          const dataUrl = `data:${audioFile.mimetype};base64,${base64Audio}`;
+          const dataUri = `data:${audioFile.mimetype};base64,${base64Audio}`;
           
-          // Save message to Firestore with the data URL
+          // Upload to Cloudinary
+          const uploadResult = await cloudinary.uploader.upload(dataUri, {
+            resource_type: 'video', // Use 'video' for audio files in Cloudinary
+            folder: 'voice-messages',
+            public_id: `voice_${userId}_${Date.now()}`,
+            overwrite: false
+          });
+          
+          // Save message to Firestore with Cloudinary URL
           const docRef = await db.collection('messages').add({
-            audioUrl: dataUrl,
+            audioUrl: uploadResult.secure_url,
             userId: userId,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             isVoice: true,
@@ -105,6 +109,7 @@ exports.handler = async (event) => {
             body: JSON.stringify({ id: docRef.id, success: true })
           });
         } catch (error) {
+          console.error('Error processing audio:', error);
           resolve({
             statusCode: 500,
             headers: { 'Access-Control-Allow-Origin': '*' },

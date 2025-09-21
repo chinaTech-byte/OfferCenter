@@ -1222,43 +1222,4 @@ mediaRecorder.onstop = async () => {
         }
     </script>
 </body>
-</html>        a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-
-                    showNotification('Chat history exported as PDF successfully');
-                } else {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to export PDF');
-                }
-            } catch (error) {
-                showNotification('Error exporting chat history: ' + error.message, 'error');
-                console.error('Error exporting chat history:', error);
-            }
-        }
-
-        // Show notification
-        function showNotification(message, type = 'info') {
-            notification.textContent = message;
-            notification.style.background = type === 'error' ? '#f44336' : '#333';
-            notification.classList.add('show');
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-    </script>
-</body>
-</html>        }
-    </script>
-</body>
-</html>.style.background = type === 'error' ? '#f44336' : '#333';
-            notification.classList.add('show');
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-    </script>
-</body>
 </html>

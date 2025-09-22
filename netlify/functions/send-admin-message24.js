@@ -44,7 +44,7 @@ exports.handler = async (event) => {
       text: message || " ",
       userId: userId,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      isVoice: fileType && fileType.startsWith('audio/') ? true : false,  // ✅ smart detection
+      isVoice: isVoice === true || isVoice === 'true',
       deleted: false,
       isAdmin: isAdmin === true || isAdmin === 'true',
       fileUrl: fileUrl || null,
@@ -68,4 +68,5 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: error.message })
     };
   }
+
 };

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat System with Reactions</title>
+    <link rel="stylesheet" href="styles-x.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-comments"></i> Chat System</h2>
+                <div class="online-indicator">
+                    <span class="dot"></span>
+                    <span id="online-count">0</span> online
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <img id="user-avatar" src="" alt="Avatar">
+                <div class="user-info">
+                    <h3 id="user-name">Loading...</h3>
+                    <p id="user-id">User ID: ...</p>
+                </div>
+                <button id="logout-btn" class="logout-btn" title="Change User">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+
+            <div class="chat-info">
+                <div class="info-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Tap any message to react</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-smile"></i>
+                    <span>Reactions update in real-time</span>
+                </div>
+            </div>
+
+            <div class="emoji-guide">
+                <h4><i class="fas fa-thumbs-up"></i> Quick Reactions</h4>
+                <div class="quick-emojis">
+                    <button class="emoji-btn" data-emoji="👍">👍</button>
+                    <button class="emoji-btn" data-emoji="❤️">❤️</button>
+                    <button class="emoji-btn" data-emoji="😂">😂</button>
+                    <button class="emoji-btn" data-emoji="🎉">🎉</button>
+                    <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-content">
+            <div class="chat-header">
+                <h1><i class="fas fa-comment-dots"></i> Group Chat</h1>
+                <div class="header-actions">
+                    <button id="clear-chat" class="icon-btn" title="Clear Chat">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button id="refresh-chat" class="icon-btn" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="messages-container" id="messages-container">
+                <div class="empty-state" id="empty-state">
+                    <i class="fas fa-comment-slash"></i>
+                    <h3>No messages yet</h3>
+                    <p>Be the first to send a message!</p>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="message-input" 
+                        placeholder="Type your message here..."
+                        maxlength="500"
+                    >
+                    <div class="input-actions">
+                        <button id="emoji-picker-btn" class="icon-btn" title="Add Emoji">
+                            <i class="far fa-smile"></i>
+                        </button>
+                        <button id="send-btn" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Send
+                        </button>
+                    </div>
+                </div>
+                <div class="character-count">
+                    <span id="char-count">0</span>/500
+                </div>
+            </div>
+
+            <!-- Emoji Picker Modal -->
+            <div class="emoji-picker-modal" id="emoji-picker">
+                <div class="emoji-categories">
+                    <button class="emoji-category active" data-category="popular">Popular</button>
+                    <button class="emoji-category" data-category="smileys">Smileys</button>
+                    <button class="emoji-category" data-category="objects">Objects</button>
+                    <button class="emoji-category" data-category="symbols">Symbols</button>
+                </div>
+                <div class="emoji-grid" id="emoji-grid">
+                    <!-- Emojis will be populated by JavaScript -->
+                </div>
+                <button class="close-emoji-btn" id="close-emoji-btn">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reaction Popup -->
+    <div class="reaction-popup" id="reaction-popup">
+        <div class="reaction-options">
+            <button class="reaction-option" data-emoji="👍">👍</button>
+            <button class="reaction-option" data-emoji="❤️">❤️</button>
+            <button class="reaction-option" data-emoji="😂">😂</button>
+            <button class="reaction-option" data-emoji="😮">😮</button>
+            <button class="reaction-option" data-emoji="😢">😢</button>
+            <button class="reaction-option" data-emoji="🎉">🎉</button>
+            <button class="reaction-option" data-emoji="🔥">🔥</button>
+            <button class="reaction-option" data-emoji="👏">👏</button>
+            <button class="reaction-option" data-emoji="🥳">🥳</button>
+            <button class="reaction-option" data-emoji="🤔">🤔</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Loading chat...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduVista | modern school landing page</title>
+  <!-- Font Awesome 6 (free) & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #fbfdff;
+      color: #1e2b37;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* color palette – fresh & modern */
+    :root {
+      --primary: #1f4a5c;    /* deep teal */
+      --primary-light: #e0f0f5;
+      --accent: #ff8c5a;      /* warm coral */
+      --accent-soft: #ffe6dc;
+      --gray-bg: #f8fafc;
+      --card-white: #ffffff;
+      --shadow-sm: 0 12px 28px -8px rgba(0, 32, 64, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
+      --shadow-hover: 0 28px 40px -12px rgba(0, 50, 80, 0.2), 0 8px 24px rgba(31, 74, 92, 0.08);
+      --border-radius-card: 2rem;
+      --border-radius-img: 1.5rem;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ---------- header sticky ---------- */
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      z-index: 100;
+      border-bottom: 1px solid rgba(31, 74, 92, 0.1);
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(130deg, var(--primary), #2b6c85);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo i {
+      color: var(--accent);
+      margin-right: 6px;
+      background: none;
+      -webkit-text-fill-color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-weight: 500;
+      color: #2a4050;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+    .btn-outline {
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      padding: 0.5rem 1.5rem;
+      border-radius: 60px;
+      font-weight: 600;
+      color: var(--primary);
+      transition: 0.25s;
+    }
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* ---------- hero ---------- */
+    .hero {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      isolation: isolate;
+      background: linear-gradient(145deg, #ffffff 0%, #f2f9ff 100%);
+      border-bottom-left-radius: 4rem;
+      border-bottom-right-radius: 4rem;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') center/cover;
+      opacity: 0.1;
+      z-index: -1;
+    }
+    .hero .container {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .hero h1 {
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 span {
+      background: linear-gradient(130deg, var(--accent), #ffb085);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: #3b5565;
+      margin-bottom: 2.5rem;
+      max-width: 550px;
+      line-height: 1.5;
+    }
+    .hero-btns {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      padding: 0.9rem 2.5rem;
+      border-radius: 60px;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 12px 18px -10px rgba(31,74,92,0.4);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      background: #123a48;
+      transform: scale(1.02) translateY(-3px);
+      box-shadow: 0 22px 28px -12px rgba(31,74,92,0.5);
+    }
+    .btn-play {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .btn-play i {
+      background: white;
+      box-shadow: var(--shadow-sm);
+      border-radius: 50%;
+      padding: 0.7rem;
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+    .hero-image {
+      background: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover;
+      height: 460px;
+      border-radius: 3rem 3rem 3rem 10rem;
+      box-shadow: var(--shadow-hover);
+      transition: 0.3s;
+    }
+
+    /* ---------- stats / features ---------- */
+    .stats-grid {
+      display: flex;
+      justify-content: space-between;
+      background: var(--card-white);
+      padding: 2.5rem 3rem;
+      border-radius: 4rem;
+      box-shadow: var(--shadow-sm);
+      margin-top: -4rem;
+      position: relative;
+      z-index: 5;
+      backdrop-filter: blur(4px);
+      background: rgba(255,255,255,0.8);
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .stat-label {
+      color: #44616e;
+      font-weight: 500;
+    }
+
+    /* ---------- sections general ---------- */
+    .section {
+      padding: 6rem 0;
+    }
+    .section-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    .section-subtitle {
+      color: #587b8a;
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin-bottom: 3.5rem;
+      line-height: 1.5;
+    }
+
+    /* cards grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    /* base card style */
+    .card {
+      background: var(--card-white);
+      border-radius: var(--border-radius-card);
+      padding: 1.8rem 1.5rem 2rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+      border: 1px solid rgba(0,0,0,0.02);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-12px) scale(1.01);
+      box-shadow: var(--shadow-hover);
+    }
+    .card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: var(--border-radius-img);
+      margin-bottom: 1.5rem;
+      transition: 0.4s ease;
+    }
+    .card:hover .card-img {
+      transform: scale(1.02);
+    }
+    .card h3 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.6rem;
+    }
+    .card p {
+      color: #496775;
+      line-height: 1.5;
+      margin-bottom: 1.2rem;
+    }
+    .card i {
+      color: var(--accent);
+      margin-right: 0.5rem;
+    }
+    .teacher-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+    .social-links a {
+      color: var(--primary);
+      margin-right: 1rem;
+      font-size: 1.2rem;
+      transition: 0.2s;
+    }
+    .social-links a:hover { color: var(--accent); }
+
+    /* testimonial card */
+    .testimonial-card {
+      background: white;
+      border-radius: 2.5rem;
+      padding: 2rem 2rem 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .testimonial-card .quote {
+      font-size: 1.1rem;
+      font-style: italic;
+      margin: 1rem 0 1.5rem;
+      color: #2a4a5a;
+    }
+    .testimonial-card .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 60px;
+      object-fit: cover;
+      border: 3px solid var(--accent-soft);
+    }
+
+    /* event card */
+    .event-date {
+      background: var(--accent-soft);
+      border-radius: 60px;
+      padding: 0.3rem 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: inline-block;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    /* animation on scroll (fade up) */
+    .animate {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .animate.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* cta */
+    .cta-section {
+      background: linear-gradient(120deg, var(--primary), #2a6b80);
+      border-radius: 4rem;
+      padding: 4rem 3rem;
+      color: white;
+      text-align: center;
+      margin: 4rem 0;
+    }
+    .cta-section h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .cta-section .btn-primary {
+      background: white;
+      color: var(--primary);
+      box-shadow: none;
+      margin-top: 2rem;
+    }
+
+    /* footer */
+    footer {
+      background: #11212e;
+      color: #adc4d3;
+      padding: 3rem 0;
+      border-radius: 3rem 3rem 0 0;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      gap: 3rem;
+    }
+    .footer-logo {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+    }
+    .footer-links a {
+      display: block;
+      color: #adc4d3;
+      text-decoration: none;
+      margin-bottom: 0.8rem;
+      transition: 0.2s;
+    }
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      .hero .container { grid-template-columns: 1fr; text-align: center; }
+      .hero p { margin-left: auto; margin-right: auto; }
+      .hero-btns { justify-content: center; }
+      .stats-grid { flex-direction: column; gap: 2rem; margin-top: 1rem; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container navbar">
+      <div class="logo"><i class="fas fa-graduation-cap"></i> EduVista</div>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#">Courses</a>
+        <a href="#">Teachers</a>
+        <a href="#">Events</a>
+        <a href="#">Contact</a>
+        <a href="#" class="btn-outline">Sign in</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- hero section -->
+    <section class="hero">
+      <div class="container">
+        <div class="animate">
+          <h1>Where <span>curiosity</span> meets excellence</h1>
+          <p>Empowering students to discover their potential through innovative learning and caring community.</p>
+          <div class="hero-btns">
+            <a href="#" class="btn-primary">Explore programs</a>
+            <a href="#" class="btn-play"><i class="fas fa-play"></i> Watch story</a>
+          </div>
+        </div>
+        <div class="hero-image animate"></div>
+      </div>
+    </section>
+
+    <!-- floating stats -->
+    <div class="container stats-grid animate">
+      <div class="stat-item"><div class="stat-number">2.5k+</div><div class="stat-label">Students</div></div>
+      <div class="stat-item"><div class="stat-number">140+</div><div class="stat-label">Expert teachers</div></div>
+      <div class="stat-item"><div class="stat-number">32</div><div class="stat-label">After-school clubs</div></div>
+      <div class="stat-item"><div class="stat-number">98%</div><div class="stat-label">parents satisfied</div></div>
+    </div>
+
+    <!-- about / featured courses -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title animate">Designed for the future</h2>
+        <p class="section-subtitle animate">Project‑based learning, small classes, and a diverse curriculum that sparks passion.</p>
+        <div class="card-grid">
+          <!-- course card 1 -->
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="math">
+            <h3>STEM excellence</h3>
+            <p><i class="fas fa-flask"></i> Robotics, coding, advanced math</p>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="science">
+            <h3>Science & innovation</h3>
+            <p><i class="fas fa-dna"></i> Hands‑on lab & research projects</p>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="art">
+            <h3>Creative arts</h3>
+            <p><i class="fas fa-paint-brush"></i> Visual arts, music, drama</p>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="sports">
+            <h3>Sports & wellness</h3>
+            <p><i class="fas fa-futbol"></i> Athletics, yoga, team building</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- teachers section -->
+    <section class="section" style="background: var(--primary-light);">
+      <div class="container">
+        <h2 class="section-title animate">Meet your mentors</h2>
+        <p class="section-subtitle animate">Passionate educators with real‑world experience</p>
+        <div class="card-grid">
+          <!-- teacher 1 -->
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="teacher">
+            <h3>Dr. Sarah Chen</h3>
+            <p>Head of STEM · PhD in Physics</p>
+            <div class="social-links"><a href="#"><i class="fab fa-linkedin"></i></a><a href="#"><i class="fab fa-twitter"></i></a></div>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="teacher">
+            <h3>Mr. James Okonkwo</h3>
+            <p>Mathematics · 12 yrs experience</p>
+            <div class="social-links"><a href="#"><i class="fab fa-linkedin"></i></a><a href="#"><i class="fab fa-twitter"></i></a></div>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="teacher">
+            <h3>Ms. Elena Voss</h3>
+            <p>Creative Arts · MFA Painting</p>
+            <div class="social-links"><a href="#"><i class="fab fa-linkedin"></i></a><a href="#"><i class="fab fa-instagram"></i></a></div>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="teacher">
+            <h3>Mr. David Park</h3>
+            <p>Physical education & wellness</p>
+            <div class="social-links"><a href="#"><i class="fab fa-linkedin"></i></a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- testimonials -->
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title animate">Trusted by parents</h2>
+        <p class="section-subtitle animate">Real stories from our community</p>
+        <div class="card-grid">
+          <div class="testimonial-card animate">
+            <i class="fas fa-quote-left" style="color: var(--accent); font-size: 2rem; opacity: 0.5;"></i>
+            <p class="quote">"EduVista nurtured my daughter's love for science. The teachers are incredibly supportive."</p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <img class="avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="parent">
+              <div><strong>Maria Gonzalez</strong><br>Parent of grade 8 student</div>
+            </div>
+          </div>
+          <div class="testimonial-card animate">
+            <i class="fas fa-quote-left" style="color: var(--accent); font-size: 2rem; opacity: 0.5;"></i>
+            <p class="quote">"The after-school clubs and individual attention made all the difference for our son."</p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <img class="avatar" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="parent">
+              <div><strong>Robert Tan</strong><br>Father of two</div>
+            </div>
+          </div>
+          <div class="testimonial-card animate">
+            <i class="fas fa-quote-left" style="color: var(--accent); font-size: 2rem; opacity: 0.5;"></i>
+            <p class="quote">"A warm environment that balances academics and creativity. We're so glad we moved here."</p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <img class="avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="parent">
+              <div><strong>Linda Schmidt</strong><br>Parent of grade 5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- events & news -->
+    <section class="section" style="background: #ffffff;">
+      <div class="container">
+        <h2 class="section-title animate">Upcoming events</h2>
+        <p class="section-subtitle animate">Join us and be part of the excitement</p>
+        <div class="card-grid">
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="science fair">
+            <span class="event-date"><i class="far fa-calendar"></i> May 15, 2025</span>
+            <h3>Annual STEM Fair</h3>
+            <p>Projects from grade 3-12, guest speakers from tech industry.</p>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="open house">
+            <span class="event-date"><i class="far fa-calendar"></i> June 2, 2025</span>
+            <h3>Spring Open House</h3>
+            <p>Tour campus, meet teachers, and enjoy student performances.</p>
+          </div>
+          <div class="card animate">
+            <img class="card-img" src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="sports day">
+            <span class="event-date"><i class="far fa-calendar"></i> June 18, 2025</span>
+            <h3>Sports & family day</h3>
+            <p>Fun races, team games, and picnic on the field.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- cta banner -->
+    <div class="container">
+      <div class="cta-section animate">
+        <h2>Ready to join our learning community?</h2>
+        <p style="font-size: 1.2rem; max-width: 600px; margin: 0 auto;">Enrollments for 2025–26 are now open. Limited seats.</p>
+        <a href="#" class="btn-primary">Inquire today →</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- footer -->
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <div class="footer-logo"><i class="fas fa-graduation-cap"></i> EduVista</div>
+        <p style="margin: 1.5rem 0 1rem;">Inspiring lifelong learners since 1998. Accredited by the National Council of Independent Schools.</p>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="#" style="color:white;"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" style="color:white;"><i class="fab fa-instagram"></i></a>
+          <a href="#" style="color:white;"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <h4 style="color:white;">Explore</h4>
+        <a href="#">Academics</a><a href="#">Admissions</a><a href="#">Calendar</a><a href="#">News</a>
+      </div>
+      <div class="footer-links">
+        <h4 style="color:white;">Support</h4>
+        <a href="#">Contact</a><a href="#">Careers</a><a href="#">Transport</a><a href="#">Meals</a>
+      </div>
+      <div>
+        <h4 style="color:white;">Contact</h4>
+        <p><i class="fas fa-map-pin"></i> 123 Learning Ave, Springfield</p>
+        <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+        <p><i class="fas fa-envelope"></i> info@eduvista.edu</p>
+      </div>
+    </div>
+    <div class="container" style="border-top: 1px solid #2f4a5c; margin-top: 2.5rem; padding-top: 2rem; text-align: center;">
+      © 2025 EduVista School. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- scroll animation script (intersection observer) -->
+  <script>
+    (function() {
+      const animatedElements = document.querySelectorAll('.animate');
+      
+      if (animatedElements.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              // you can unobserve after first show to reduce load
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -20px 0px' }); // slight offset
+        
+        animatedElements.forEach(el => observer.observe(el));
+      }
+      
+      // fallback: immediately show if observer fails or for older browsers
+      setTimeout(() => {
+        animatedElements.forEach(el => el.classList.add('visible'));
+      }, 300);
+    })();
+  </script>
+
+  <!-- tiny extra hover micro-interactions (already in css) -->
+</body>
+</html>
